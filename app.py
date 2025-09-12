@@ -4,6 +4,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
 
+# --- Configuração da Página (Primeiro comando) ---
+st.set_page_config(
+    page_title="Contacta",
+    page_icon="📋",
+    layout="wide",
+)
+
 # --- Carregando o CSS Externo ---
 with open('assets/css/styles.css') as f:
     css = f.read()
@@ -22,14 +29,7 @@ st.sidebar.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.sidebar.image("assets/images/logo.png", width=230)  # Ajuste o caminho se necessário
-
-# --- Configuração da Página ---
-st.set_page_config(
-    page_title="Contacta",
-    page_icon="📋",
-    layout="wide",
-)
+st.sidebar.image("assets/images/logo.png", width=270)  # Ajuste o caminho se necessário
 
 # --- Carregamento dos dados ---
 @st.cache_data
@@ -49,6 +49,7 @@ def carregar_dados():
     return df
 
 df = carregar_dados()
+
 # --- Seleção da página ---
 pagina = st.sidebar.selectbox("Escolha a página", ["Dashboard Geral", "Entrevistas"])
 
@@ -101,7 +102,7 @@ if pagina == "Dashboard Geral":
                 showlegend=True,
                 xaxis_title=None,
                 yaxis_title="Quantidade",
-                xaxis_tickangle=-45
+                xaxis_tickangle=0
             )
             st.plotly_chart(fig1, use_container_width=True)
 
