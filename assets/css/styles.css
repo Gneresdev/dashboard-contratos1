@@ -1,0 +1,74 @@
+/* --- Estilo Geral do Aplicativo --- */
+
+/* Cor de fundo escura para o app inteiro */
+.stApp {
+    background-color: #391a74;
+    color: white;  /* Cor do texto em branco para contraste */
+}
+
+/* --- Barra Lateral (Sidebar) --- */
+
+/* Cor de fundo da Sidebar */
+.css-1d391kg {
+    color: #9B4DFF;  /* Texto roxo para a Sidebar */
+}
+
+/* --- Gráficos --- */
+
+/* Estilo do gráfico de barras */
+div.stPlotlyChart {
+    border: 2px solid #9B4DFF;  /* Borda roxa nos gráficos */
+    border-radius: 40px;
+    margin-bottom: 20px;
+}
+
+/* --- Modal (janela pop-up) --- */
+
+/* Estilo do Modal */
+#myModal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);  /* Fundo semi-transparente */
+}
+
+/* Conteúdo do Modal */
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    border-radius: 10px;
+}
+
+/* Fechar o modal */
+#closeModalButton {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+#closeModalButton:hover,
+#closeModalButton:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* --- Carregamento de Dados --- */
+
+/* Mensagem de carregamento */
+#loadingMessage {
+    font-size: 20px;
+    color: #9B4DFF;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 20px;
+}

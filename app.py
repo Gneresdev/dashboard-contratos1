@@ -2,6 +2,27 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import streamlit.components.v1 as components
+
+# --- Carregando o CSS Externo ---
+with open('assets/css/styles.css') as f:
+    css = f.read()
+    st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+
+# --- Adicionando o Logo na Barra Lateral ---
+st.sidebar.markdown("""
+    <style>
+        /* Estilo para centralizar a logo na Sidebar */
+        .sidebar-logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+st.sidebar.image("assets/images/logo.png", width=230)  # Ajuste o caminho se necessário
 
 # --- Configuração da Página ---
 st.set_page_config(
@@ -18,9 +39,9 @@ def carregar_dados():
 
     siglas = {
         'AC': 'Assistente Comercial',
-        'LG': 'Logistica',
-        'RS': 'Recrutamento e seleção',
-        'DP': 'Departamento pessoal',
+        'LG': 'Logística',
+        'RS': 'Recrutamento e Seleção',
+        'DP': 'Departamento Pessoal',
         'AD': 'Analista de Dados'
     }
     df['Area'] = df['Area'].replace(siglas)
@@ -36,17 +57,19 @@ if pagina == "Dashboard Geral":
 
     # --- Barra Lateral (Filtros) ---
     st.sidebar.header("Filtros")
-
     areas = sorted(df['Area'].dropna().unique())
     areas_selecionadas = st.sidebar.multiselect("Selecione Área(s)", areas, default=areas)
 
     df_filtrado = df[df['Area'].isin(areas_selecionadas)]
 
     # --- Métricas e Indicadores ---
-    st.title("Dashboards Contacta 🚀")
+    st.title("Dashboards Contacta🚀")
+
+    st.markdown("---")
+
 
     # --- Contratos encerrando em dezembro/2025 por setor
-    encerramentos = df_filtrado[
+    encerramentos = df_filtrado[ 
         (df_filtrado['Data_Fim'].dt.year == 2025) & 
         (df_filtrado['Data_Fim'].dt.month == 12)
     ]
@@ -66,13 +89,12 @@ if pagina == "Dashboard Geral":
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("Contratos encerrando em Dez/2025 por Área ⌛")
+        st.markdown('<h3 style="text-align: center;">Contratos encerrando em Dez/2025 por Área</h3>', unsafe_allow_html=True)
         if not encerramentos_count.empty:
-            # Gráfico de barras empilhadas
             fig1 = px.bar(
                 contratos_por_turno,
                 x='Area', y='Quantidade', color='Turno',
-                color_discrete_map={"Manhã": "#A7390E", "Tarde": "#DA03F7", "Integral": "#99F099"},
+                color_discrete_map={"Manha": "#9B4DFF", "Tarde": "#3C8F8F", "Integral": "#A285F3"},
                 labels={'Area': 'Setor', 'Quantidade': 'Quantidade de Contratos', 'Turno': 'Turno de Trabalho'},
                 template="plotly_dark"
             )
@@ -88,26 +110,39 @@ if pagina == "Dashboard Geral":
             st.write("Nenhum contrato encerrando em Dezembro de 2025 nas áreas selecionadas.")
 
     with col2:
-        st.subheader("Assinaturas Pendentes por Área ⚠️")
+        st.markdown('<h3 style="text-align: center;">Assinaturas Pendentes</h3>', unsafe_allow_html=True)
         if not pendentes_count.empty:
-            fig2 = px.pie(
-                pendentes_count, names='Area', values='Pendentes', 
-                color='Area', color_discrete_sequence=px.colors.qualitative.Set1,
-                template="plotly_dark"
+            # Criando um gráfico de rosca (donut chart)
+            fig2 = go.Figure(data=[go.Pie(
+                labels=pendentes_count['Area'],
+                values=pendentes_count['Pendentes'], 
+                hole=0.3,  # Faz o "buraco" no centro, criando o formato de rosca
+                textinfo="percent+label",  # Exibe o texto (percentual + label)
+                pull=[0.1, 0.1, 0.1, 0.1],  # Opcional: pode afastar as fatias
+                marker=dict(colors=["#9B4DFF", "#3C8F8F", "#D985F3", "#FF9B8F"]),  # Cores personalizadas
+            )])
+
+            # Customizando a aparência do gráfico
+            fig2.update_layout(
+                title="Distribuição de Assinaturas Pendentes por Área",
+                showlegend=True,
+                template="plotly_dark",  # Estilo do gráfico
+                title_x=0.5,  # Alinha o título ao centro
+                margin=dict(t=50, b=50, l=50, r=50)  # Ajusta as margens para melhorar o espaçamento
             )
-            fig2.update_traces(textinfo="percent+label", pull=[0.1, 0.1, 0.1, 0.1])
+
+            # Exibir o gráfico no Streamlit
             st.plotly_chart(fig2, use_container_width=True)
         else:
             st.write("Nenhuma assinatura pendente nas áreas selecionadas.")
 
     st.markdown("---")
 
-    st.subheader("Setores com Mais Contratos Ativos 🟢")
+    st.subheader("Setores com Mais Contratos Ativos")
     # Contagem de estagiários por setor
     estagiarios_count = df_filtrado['Area'].value_counts().reset_index()
     estagiarios_count.columns = ['Area', 'Quantidade de Estagiários']
 
-    # Gráfico de barras horizontais para mostrar os setores com mais estagiários
     if not estagiarios_count.empty:
         fig4 = px.bar(
             estagiarios_count, x='Quantidade de Estagiários', y='Area', color='Area', text='Quantidade de Estagiários',
@@ -130,23 +165,28 @@ if pagina == "Dashboard Geral":
     st.dataframe(df_filtrado.reset_index(drop=True))
 
 elif pagina == "Entrevistas":
-    st.title("Dashboard de Entrevistas por Mês")
+    st.title("Dashboard de Entrevistas por Mês📋")
 
-    # Carregando os dados de entrevistas
+    st.markdown("---")
+
+
     entrevistas_df = pd.read_csv("entrevistas_total.csv", sep=';')  # ajuste se usar outro separador
 
-    # Verificar se a coluna "Mês" existe
+    # Definindo a paleta de cores personalizada
+    paleta_cores = ["#9B4DFF", "#3C8F8F", "#D985F3", "#692AFC", "#392557"]  # Definindo as cores (Roxo, Verde-azulado, e outras)
+
     if "Mês" not in entrevistas_df.columns:
         st.warning("A planilha entrevistas_total.csv não tem a coluna 'Mês'. Gráfico por mês não será exibido.")
     else:
         st.markdown("### Total de Entrevistas por Mês")
         entrevistas_por_mes = entrevistas_df.groupby("Mês")["Total"].sum().reset_index()
 
-        fig = px.bar(entrevistas_por_mes, x="Mês", y="Total", text="Total", color="Mês")
+        # Aplicando a paleta de cores personalizada ao gráfico de barras
+        fig = px.bar(entrevistas_por_mes, x="Mês", y="Total", text="Total", color="Mês", 
+                     color_discrete_sequence=paleta_cores)  # Aplicando a paleta de cores personalizada
         fig.update_layout(showlegend=False, yaxis_title="Entrevistas", xaxis_title="Mês")
         st.plotly_chart(fig, use_container_width=True)
 
-    # Gráfico de entrevistas por semana
     st.markdown("---")
     st.markdown("### Total de Entrevistas por Semana")
 
@@ -154,8 +194,10 @@ elif pagina == "Entrevistas":
     totais_semanas = entrevistas_df[semanas].sum().reset_index()
     totais_semanas.columns = ["Semana", "Total de Entrevistas"]
 
+    # Aplicando a paleta de cores personalizada ao gráfico de barras para as semanas
     fig_semana = px.bar(totais_semanas, x="Semana", y="Total de Entrevistas",
-                       text="Total de Entrevistas", title="Entrevistas por Semana")
+                       text="Total de Entrevistas", title="Entrevistas por Semana", 
+                       color="Semana", color_discrete_sequence=paleta_cores)  # Aplicando a paleta de cores personalizada
     fig_semana.update_layout(yaxis_title="Quantidade")
     st.plotly_chart(fig_semana, use_container_width=True)
 
