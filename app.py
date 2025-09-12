@@ -49,7 +49,6 @@ def carregar_dados():
     return df
 
 df = carregar_dados()
-
 # --- Seleção da página ---
 pagina = st.sidebar.selectbox("Escolha a página", ["Dashboard Geral", "Entrevistas"])
 
