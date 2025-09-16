@@ -118,8 +118,8 @@ if pagina == "Dashboard Geral":
                 values=pendentes_count['Pendentes'], 
                 hole=0.3,  # Faz o "buraco" no centro, criando o formato de rosca
                 textinfo="percent+label",  # Exibe o texto (percentual + label)
-                pull=[0.1, 0.1, 0.1, 0.1],  # Opcional: pode afastar as fatias
-                marker=dict(colors=["#9B4DFF", "#3C8F8F", "#D985F3", "#FF9B8F"]),  # Cores personalizadas
+                pull=[0.1]*len(pendentes_count),  # Pode ajustar o número de fatias dinamicamente
+                marker=dict(colors=["#9B4DFF", "#3C8F8F", "#D985F3", "#FF9B8F"][:len(pendentes_count)]),  # Cores personalizadas
             )])
 
             # Customizando a aparência do gráfico
@@ -138,26 +138,40 @@ if pagina == "Dashboard Geral":
 
     st.markdown("---")
 
-    st.subheader("Setores com Mais Contratos Ativos")
+    st.subheader("📊 Setores com Mais Contratos Ativos")
+
     # Contagem de estagiários por setor
     estagiarios_count = df_filtrado['Area'].value_counts().reset_index()
     estagiarios_count.columns = ['Area', 'Quantidade de Estagiários']
 
     if not estagiarios_count.empty:
         fig4 = px.bar(
-            estagiarios_count, x='Quantidade de Estagiários', y='Area', color='Area', text='Quantidade de Estagiários',
-            color_discrete_sequence=px.colors.sequential.Viridis,
-            template="plotly_dark"
+            estagiarios_count,
+            x='Quantidade de Estagiários',
+            y='Area',
+            color='Quantidade de Estagiários',
+            text='Quantidade de Estagiários',
+            color_continuous_scale='Viridis',
+            template='plotly_dark',
+            orientation='h'  # Gráfico horizontal para melhor leitura
         )
         fig4.update_layout(
             showlegend=False,
+            height=500,
             xaxis_title="Quantidade de Estagiários",
-            yaxis_title=None,
-            xaxis_tickangle=0
+            yaxis_title="Área",
+            margin=dict(l=80, r=40, t=40, b=40)
+        )
+        fig4.update_traces(
+            textposition='outside',
+            marker_line_color='white',
+            marker_line_width=1,
+            textfont_color='white'
         )
         st.plotly_chart(fig4, use_container_width=True)
     else:
-        st.write("Não há dados sobre estagiários ou contratos nas áreas selecionadas.")
+        st.warning("⚠️ Não há dados sobre estagiários ou contratos nas áreas selecionadas.")
+
 
     st.markdown("---")
 
