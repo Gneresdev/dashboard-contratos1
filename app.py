@@ -94,7 +94,7 @@ if pagina == "Dashboard Geral":
             fig1 = px.bar(
                 contratos_por_turno,
                 x='Area', y='Quantidade', color='Turno',
-                color_discrete_map={"Manha": "#9B4DFF", "Tarde": "#3C8F8F", "Integral": "#A285F3"},
+                color_discrete_map={"Manha": "#9B4DFF", "Tarde": "#3C8F8F", "Integral": "#C8B7F7"},
                 labels={'Area': 'Setor', 'Quantidade': 'Quantidade de Contratos', 'Turno': 'Turno de Trabalho'},
                 template="plotly_dark"
             )
@@ -169,11 +169,10 @@ elif pagina == "Entrevistas":
 
     st.markdown("---")
 
-
     entrevistas_df = pd.read_csv("entrevistas_total.csv", sep=';')  # ajuste se usar outro separador
 
-    # Definindo a paleta de cores personalizada
-    paleta_cores = ["#9B4DFF", "#3C8F8F", "#D985F3", "#692AFC", "#392557"]  # Definindo as cores (Roxo, Verde-azulado, e outras)
+    # Paleta de cores personalizada (mantida)
+    paleta_cores = ["#9B4DFF", "#3C8F8F", "#D985F3", "#692AFC", "#392557"]
 
     if "Mês" not in entrevistas_df.columns:
         st.warning("A planilha entrevistas_total.csv não tem a coluna 'Mês'. Gráfico por mês não será exibido.")
@@ -181,10 +180,21 @@ elif pagina == "Entrevistas":
         st.markdown("### Total de Entrevistas por Mês")
         entrevistas_por_mes = entrevistas_df.groupby("Mês")["Total"].sum().reset_index()
 
-        # Aplicando a paleta de cores personalizada ao gráfico de barras
-        fig = px.bar(entrevistas_por_mes, x="Mês", y="Total", text="Total", color="Mês", 
-                     color_discrete_sequence=paleta_cores)  # Aplicando a paleta de cores personalizada
-        fig.update_layout(showlegend=False, yaxis_title="Entrevistas", xaxis_title="Mês")
+        # Ordenar os meses corretamente, se possível
+        try:
+            entrevistas_por_mes["Mês"] = pd.Categorical(entrevistas_por_mes["Mês"],
+                                                        categories=["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+                                                                    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+                                                        ordered=True)
+            entrevistas_por_mes = entrevistas_por_mes.sort_values("Mês")
+        except:
+            pass  # caso os nomes não sejam meses, pula ordenação
+
+        # Gráfico de linha com marcadores para melhor visualização temporal
+        fig = px.line(entrevistas_por_mes, x="Mês", y="Total", text="Total", markers=True,
+                      line_shape="linear", color_discrete_sequence=[paleta_cores[0]])  # Usando só a primeira cor
+        fig.update_traces(textposition="top center")
+        fig.update_layout(yaxis_title="Entrevistas", xaxis_title="Mês")
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
@@ -194,11 +204,12 @@ elif pagina == "Entrevistas":
     totais_semanas = entrevistas_df[semanas].sum().reset_index()
     totais_semanas.columns = ["Semana", "Total de Entrevistas"]
 
-    # Aplicando a paleta de cores personalizada ao gráfico de barras para as semanas
-    fig_semana = px.bar(totais_semanas, x="Semana", y="Total de Entrevistas",
-                       text="Total de Entrevistas", title="Entrevistas por Semana", 
-                       color="Semana", color_discrete_sequence=paleta_cores)  # Aplicando a paleta de cores personalizada
-    fig_semana.update_layout(yaxis_title="Quantidade")
+    # Gráfico de pizza para mostrar proporção semanal
+    fig_semana = px.pie(totais_semanas, names="Semana", values="Total de Entrevistas",
+                        title="Distribuição de Entrevistas por Semana",
+                        color_discrete_sequence=paleta_cores,
+                        hole=0.4)
+    fig_semana.update_traces(textposition="inside", textinfo="percent+label")
     st.plotly_chart(fig_semana, use_container_width=True)
 
     st.markdown("---")
